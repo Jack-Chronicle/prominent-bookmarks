@@ -1,6 +1,6 @@
 {
     "name": "obsidian-prominent-starred-files",
-    "version": "2.0.2",
+    "version": "2.5.0",
     "description": "Prominently display starred files in Obsidian.md",
     "main": "main.js",
     "scripts": {
@@ -14,7 +14,7 @@
         "releaseCommitMessageFormat": "Prominent Starred Files: v{{currentTag}}"
     },
     "keywords": [],
-    "author": "Jeremy Valentine",
+    "author": "Jack Chronicle",
     "license": "MIT",
     "devDependencies": {
         "@types/node": "^14.14.2",

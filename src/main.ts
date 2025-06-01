@@ -1,217 +1,118 @@
-import {
-    Notice,
-    Plugin,
-    setIcon,
-    TAbstractFile,
-    View,
-    WorkspaceLeaf
-} from "obsidian";
-import { around } from "monkey-around";
+import { Plugin, setIcon } from "obsidian";
+import { ProminentBookmarksSetting, DEFAULT_SETTINGS } from "./settingsData";
+import { ProminentBookmarksSettingTab } from "./settingsTab";
 
-interface InternalPlugin {
-    enabled: boolean;
-    enable: (b: boolean) => void;
-    disable: (b: boolean) => void;
-}
-interface Starred extends InternalPlugin {
-    instance: {
-        addItem: (file: StarredFile) => void;
-        removeItem: (file: StarredFile) => void;
-        items: StarredFile[];
-    };
-}
-interface FileExplorer extends InternalPlugin {}
 
-interface StarredFile {
-    type: "file" | "folder";
-    path: string;
-}
-interface InternalPlugins {
-    starred: Starred;
-    bookmarks: Starred;
-    "file-explorer": FileExplorer;
-}
-
-declare module "obsidian" {
-    interface App {
-        internalPlugins: {
-            plugins: InternalPlugins;
-            getPluginById<T extends keyof InternalPlugins>(
-                id: T
-            ): InternalPlugins[T];
-            loadPlugin(...args: any[]): any;
-        };
-    }
-    interface TAbstractFile {
-        titleEl: HTMLElement;
-    }
-}
-interface FileExplorerWorkspaceLeaf extends WorkspaceLeaf {
-    containerEl: HTMLElement;
-    view: FileExplorerView;
-}
-
-interface FileExplorerView extends View {
-    fileItems: { [path: string]: TAbstractFile };
-}
-
-export default class ProminentStarredFiles extends Plugin {
-    bookmarkHandler: () => void;
+export default class ProminentBookmarks extends Plugin {
     files: Set<string> = new Set();
-    get bookmarksEnabled() {
-        return this.app.internalPlugins.getPluginById("bookmarks").enabled;
-    }
-    get bookmarks() {
-        return this.app.internalPlugins.getPluginById("bookmarks");
-    }
-    get bookmarkInstance() {
-        if (!this.bookmarksEnabled) return;
-        return this.bookmarks.instance;
-    }
-    get fileExplorers() {
-        return this.app.workspace.getLeavesOfType(
-            "file-explorer"
-        ) as FileExplorerWorkspaceLeaf[];
-    }
+    settings: ProminentBookmarksSettings;
+
     async onload() {
-        console.log("Prominent Starred Files plugin loaded");
-
-        this.app.workspace.onLayoutReady(() => this.checkAndEnable());
-    }
-    checkAndEnable() {
-        setTimeout(() => {
-            const self = this;
-            if (
-                !this.app.internalPlugins.getPluginById("file-explorer").enabled
-            ) {
-                new Notice(
-                    "The File Explorer core plugin must be enabled to use this plugin."
-                );
-
-                const explorer = around(
-                    this.app.internalPlugins.getPluginById("file-explorer"),
-                    {
-                        enable: function (next) {
-                            return function (b) {
-                                const apply = next.call(this, b);
-                                explorer();
-                                self.checkAndEnable();
-                                return apply;
-                            };
-                        },
-                        disable: function (next) {
-                            return function (b) {
-                                explorer();
-                                self.checkAndEnable();
-                                return next.call(this, b);
-                            };
-                        }
-                    }
-                );
-                this.register(explorer);
-                return;
-            }
-
-            this.register(
-                around(this.bookmarks, {
-                    enable: function (next) {
-                        return function (b) {
-                            const apply = next.call(this, b);
-                            self.registerHandlers();
-                            for (let item of self.bookmarkInstance?.items ??
-                                []) {
-                                self.setIcon(item, "bookmark");
-                            }
-                            return apply;
-                        };
-                    },
-                    disable: function (next) {
-                        return function (b) {
-                            self.bookmarkHandler();
-                            self.registerHandlers();
-                            for (let item of self.bookmarkInstance?.items ??
-                                []) {
-                                self.removeIcon(item);
-                            }
-                            return next.call(this, b);
-                        };
-                    }
-                })
-            );
-            if (!this.bookmarksEnabled) {
-                new Notice(
-                    "The Bookmarks core plugin must be enabled to use this plugin."
-                );
-            } else {
-                this.registerHandlers();
-            }
+        console.log("ProminentBookmarks plugin loaded");
+        await this.loadSettings();
+        this.addSettingTab(new ProminentBookmarksSettingTab(this.app, this));
+        this.app.workspace.onLayoutReady(() => {
+            this.updateAll();
+            this.registerEvent(this.app.workspace.on("bookmarks-changed", () => this.updateAll()));
         });
     }
-    registerHandlers() {
-        const self = this;
 
-        if (this.bookmarksEnabled) {
-            for (let item of this.bookmarkInstance?.items ?? []) {
-                this.setIcon(item, "bookmark");
-            }
-
-            this.bookmarkHandler = around(this.bookmarks.instance, {
-                addItem: function (next) {
-                    return function (file) {
-                        self.setIcon(file, "bookmark");
-                        return next.call(this, file);
-                    };
-                },
-                removeItem: function (next) {
-                    return function (file) {
-                        self.removeIcon(file);
-                        return next.call(this, file);
-                    };
-                }
-            });
-            this.register(this.bookmarkHandler);
-        }
+    async loadSettings() {
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
     }
-    setIcon(
-        file: StarredFile,
-        icon: "star-glyph" | "bookmark",
-        el?: HTMLElement
-    ) {
-        if (!this.fileExplorers.length) return;
-        if (this.files.has(file.path)) return;
 
-        for (let explorer of this.fileExplorers) {
-            const element =
-                el ??
-                explorer.view?.fileItems?.[file.path]?.titleEl ??
-                explorer.containerEl.querySelector(
-                    `.nav-${file.type}-title[data-path="${file.path}"]`
-                );
-            if (!element) continue;
-
-            this.files.add(file.path);
-
-            setIcon(element.createDiv("prominent-decorated-file"), icon);
-        }
+    async saveSettings() {
+        await this.saveData(this.settings);
     }
-    removeIcon(file: StarredFile) {
-        if (!this.fileExplorers.length) return;
 
-        for (let explorer of this.fileExplorers) {
-            const element = explorer.containerEl.querySelector(
-                `.nav-${file.type}-title[data-path="${file.path}"]`
-            );
-            if (!element) continue;
-            this.files.delete(file.path);
-
-            const stars = element.querySelectorAll(".prominent-decorated-file");
-            if (stars.length) stars.forEach((star) => star.detach());
-        }
-    }
     onunload() {
-        console.log("Prominent Files plugin unloaded");
-        for (let file of this.bookmarkInstance?.items ?? []) {
-            this.removeIcon(file);
+        this.removeAllIcons();
+    }
+
+    get bookmarkedGroups() {
+        // This is now an array of groups
+        return (this.app as any).internalPlugins.plugins.bookmarks.instance.items || [];
+    }
+
+    get fileExplorers() {
+        return this.app.workspace.getLeavesOfType("file-explorer");
+    }
+
+    updateAll() {
+        this.removeAllIcons();
+
+        const allFiles = extractBookmarkedFiles(this.bookmarkedGroups);
+        for (const file of allFiles) {
+            const iconName = this.settings.separateIcons
+                ? file.type === "folder" 
+                    ? this.settings.folderIcon || "bookmark"
+                    : this.settings.fileIcon || "bookmark"
+                : this.settings.fileIcon || "bookmark";
+            this.setIcon(file, iconName);
         }
     }
+
+    setIcon(file: { type: string, path: string }, icon: string) {
+        if (this.files.has(file.path)) return;
+        this.files.add(file.path);
+
+        for (const leaf of this.fileExplorers) {
+            const view = (leaf as any).view;
+            const el =
+                view?.fileItems?.[file.path]?.titleEl ??
+                leaf.containerEl.querySelector(
+                    `.nav-${file.type}-title[data-path="${CSS.escape(file.path)}"]`
+                );
+            if (el) {
+                // Remove existing icons to avoid duplicates
+                el.querySelectorAll(".prominent-decorated-file").forEach(e => e.remove());
+
+                if (file.type === "folder") {
+                    // Hide the collapse/chevron icon
+                    const collapseIcon = el.querySelector('.collapse-icon, .nav-folder-collapse-indicator');
+                    if (collapseIcon) {
+                        (collapseIcon as HTMLElement).style.display = "none";
+                        // Create and insert the bookmark icon at the start
+                        const iconEl = document.createElement("div");
+                        setIcon(iconEl, icon);
+                        iconEl.classList.add("prominent-decorated-file");
+                        el.insertBefore(iconEl, el.firstChild);
+                    } else {
+                        // Fallback: just add the icon
+                        setIcon(el.createDiv("prominent-decorated-file"), icon);
+                    }
+                } else {
+                    // For files, add as before
+                    setIcon(el.createDiv("prominent-decorated-file"), icon);
+                }
+            }
+        }
+    }
+
+    removeAllIcons() {
+        for (const leaf of this.fileExplorers) {
+            // Remove the bookmark icons
+            const icons = leaf.containerEl.querySelectorAll(".prominent-decorated-file");
+            icons.forEach(i => i.remove());
+
+            // Restore folder chevrons
+            const collapseIcons = leaf.containerEl.querySelectorAll('.collapse-icon, .nav-folder-collapse-indicator');
+            collapseIcons.forEach(icon => (icon as HTMLElement).style.display = "");
+        }
+        this.files.clear();
+    }
+}
+
+// Utility function from above!
+function extractBookmarkedFiles(items: any[]): { type: string, path: string }[] {
+    const result: { type: string, path: string }[] = [];
+    for (const item of items) {
+        if ((item.type === "file" || item.type === "folder") && typeof item.path === "string") {
+            result.push({ type: item.type, path: item.path });
+        }
+        if (Array.isArray(item.items)) {
+            result.push(...extractBookmarkedFiles(item.items));
+        }
+    }
+    return result;
 }
