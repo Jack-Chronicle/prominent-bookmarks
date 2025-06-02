@@ -63,15 +63,86 @@ export default class ProminentBookmarks extends Plugin {
 
     updateAll() {
         this.removeAllIcons();
-
         const allFiles = extractBookmarkedFiles(this.bookmarkedGroups);
         for (const file of allFiles) {
-            const iconName = this.settings.separateIcons
-                ? file.type === "folder" 
+            // Folder note detection
+            let isFolderNote = false;
+            let folderNoteSelector: string | null = null;
+            if (file.type === "file") {
+                const fileName = file.path.split("/").pop()?.replace(/\.md$/, "");
+                const parentFolder = file.path.split("/").slice(0, -1).pop();
+                if (fileName && parentFolder && fileName === parentFolder) {
+                    isFolderNote = true;
+                } else {
+                    // Check for folder with same name at same level
+                    const parentPath = file.path.split("/").slice(0, -1).join("/");
+                    const foldersAtLevel = allFiles.filter(f => f.type === "folder" && f.path.startsWith(parentPath));
+                    if (foldersAtLevel.some(f => f.path.split("/").pop() === fileName)) {
+                        isFolderNote = true;
+                    }
+                }
+                if (isFolderNote) {
+                    // Selector for folder note icon: find the folder with .has-folder-note and matching data-path
+                    folderNoteSelector = `.nav-folder-title.has-folder-note[data-path="${CSS.escape(file.path.split("/").slice(0, -1).join("/"))}"]`;
+                }
+            }
+            let iconName = this.settings.separateIcons
+                ? file.type === "folder"
                     ? this.settings.folderIcon || "bookmark"
                     : this.settings.fileIcon || "bookmark"
                 : this.settings.fileIcon || "bookmark";
-            this.setIcon(file, iconName);
+            if (isFolderNote) {
+                if (this.settings.folderNoteIconMode === "custom") {
+                    iconName = this.settings.folderNoteIcon || "book";
+                } else if (this.settings.folderNoteIconMode === "folder") {
+                    iconName = this.settings.folderIcon || "bookmark";
+                } else {
+                    iconName = this.settings.fileIcon || "bookmark";
+                }
+            }
+            for (const leaf of this.fileExplorers) {
+                const containerEl = (leaf as any).containerEl as HTMLElement;
+                let el: HTMLElement | null = null;
+                let isExpanded = false;
+                let treeItem: HTMLElement | null = null;
+                if (isFolderNote && folderNoteSelector) {
+                    el = containerEl.querySelector(folderNoteSelector);
+                    if (el) {
+                        treeItem = el.closest('.tree-item');
+                        if (treeItem && !treeItem.classList.contains("is-collapsed")) {
+                            isExpanded = true;
+                        }
+                    }
+                } else {
+                    const selector = `.nav-${file.type}-title[data-path="${CSS.escape(file.path)}"]`;
+                    el = containerEl.querySelector(selector);
+                    if (el && file.type === "folder") {
+                        treeItem = el.closest('.tree-item');
+                        if (treeItem && !treeItem.classList.contains("is-collapsed")) {
+                            isExpanded = true;
+                        }
+                    }
+                }
+                if (el) {
+                    // Remove existing icons to avoid duplicates
+                    el.querySelectorAll(".prominent-decorated-file").forEach((e: Element) => e.remove());
+                    let iconToUse = iconName;
+                    if (isExpanded) {
+                        if (isFolderNote && this.settings.folderNoteExpandedIconEnabled) {
+                            iconToUse = this.settings.folderNoteExpandedIcon || iconName;
+                        } else if (file.type === "folder" && this.settings.folderExpandedIconEnabled) {
+                            iconToUse = this.settings.folderExpandedIcon || iconName;
+                        }
+                    }
+                    // Set prominent property on the item
+                    el.setAttribute("prominent", "true");
+                    // Always append as the last child (after all icons and file name)
+                    const iconEl = document.createElement("div");
+                    setIcon(iconEl, iconToUse);
+                    iconEl.classList.add("prominent-decorated-file");
+                    el.appendChild(iconEl);
+                }
+            }
         }
     }
 
