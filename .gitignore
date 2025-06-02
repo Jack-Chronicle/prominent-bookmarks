@@ -2,9 +2,6 @@
 *.iml
 .idea
 
-# npm
-node_modules
-
 # build
 main.js
 *.js.map
