@@ -3,3 +3,8 @@
     align-items: center;
     margin-left: auto;
 }
+
+[prominent="true"] .collapse-icon,
+[prominent="true"] .nav-folder-collapse-indicator {
+    display: none !important;
+}

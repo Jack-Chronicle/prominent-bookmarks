@@ -2,11 +2,8 @@
 *.iml
 .idea
 
-# npm
-node_modules
-
 # build
-main.js
+dist/
 *.js.map
 .DS_Store
 *build.js
