@@ -84,8 +84,8 @@ export class ProminentBookmarksSettingTab extends PluginSettingTab {
                     .addOption("folder", "Same as Folder")
                     .addOption("custom", "Custom Icon")
                     .setValue(this.plugin.settings.folderNoteIconMode)
-                    .onChange(async (value: "file" | "folder" | "custom") => {
-                        this.plugin.settings.folderNoteIconMode = value;
+                    .onChange(async (value: string) => {
+                        this.plugin.settings.folderNoteIconMode = value as "file" | "folder" | "custom";
                         await this.plugin.saveSettings();
                         this.display();
                         this.plugin.updateAll();
