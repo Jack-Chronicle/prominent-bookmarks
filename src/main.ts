@@ -134,8 +134,13 @@ export default class ProminentBookmarks extends Plugin {
                             iconToUse = this.settings.folderExpandedIcon || iconName;
                         }
                     }
-                    // Set prominent property on the item
-                    el.setAttribute("prominent", "true");
+                    // Set prominent property on the closest .tree-item (for nested folders too)
+                    const treeItemEl = el.closest('.tree-item');
+                    if (treeItemEl) {
+                        treeItemEl.setAttribute("prominent", "true");
+                    } else {
+                        el.setAttribute("prominent", "true");
+                    }
                     // Always append as the last child (after all icons and file name)
                     const iconEl = document.createElement("div");
                     setIcon(iconEl, iconToUse);
