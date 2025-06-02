@@ -1,10 +1,37 @@
-.prominent-decorated-file {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
+/*
+Prominent Bookmarks Styles
+- prominent="1" = file
+- prominent="2" = folder
+- prominent="3" = folder note
+*/
+
+/* Hide the default tree-item icon for folders/folder notes */
+[prominent="2"] .tree-item-icon,
+[prominent="3"] .tree-item-icon {
+  display: none !important;
 }
 
-[prominent="true"] .collapse-icon,
-[prominent="true"] .nav-folder-collapse-indicator {
-    display: none !important;
+/* Prominent icon container */
+.prominent-decorated-file {
+  display: flex;
+  align-items: center;
+  /* Remove margin-left: auto so icon stays in the same flex slot as the chevron */
+  margin-left: 0;
+  margin-right: 0;
+  /* Let the theme/snippet control position/order via flexbox */
+}
+
+/* Example: highlight folder notes differently */
+[prominent="3"] .prominent-decorated-file {
+  color: var(--color-accent, #eab308);
+}
+
+/* Example: highlight files differently */
+[prominent="1"] .prominent-decorated-file {
+  color: var(--color-file, #4f46e5);
+}
+
+/* Example: highlight folders differently */
+[prominent="2"] .prominent-decorated-file {
+  color: var(--color-folder, #22c55e);
 }
