@@ -19,7 +19,7 @@ Prominent Bookmarks Styles
 /* For file items, ensure the icon is at the end and aligned */
 .nav-file-title .prominent-decorated-file {
   margin-left: auto;
-  margin-right: -7px;
+  margin-right: 0;
   align-self: center;
 }
 
