@@ -8,6 +8,10 @@ export interface ProminentBookmarksSettings {
     folderExpandedIcon?: string;
     folderNoteExpandedIconEnabled?: boolean;
     folderNoteExpandedIcon?: string;
+    iconColoringEnabled?: boolean; // NEW
+    fileIconColor?: string;        // NEW
+    folderIconColor?: string;      // NEW
+    folderNoteIconColor?: string;  // NEW
 }
 
 export const DEFAULT_SETTINGS: ProminentBookmarksSettings = {
@@ -19,5 +23,9 @@ export const DEFAULT_SETTINGS: ProminentBookmarksSettings = {
     folderExpandedIconEnabled: false,
     folderExpandedIcon: "chevron-down",
     folderNoteExpandedIconEnabled: false,
-    folderNoteExpandedIcon: "chevron-down"
+    folderNoteExpandedIcon: "chevron-down",
+    iconColoringEnabled: true,           // NEW
+    fileIconColor: "#4f46e5",            // NEW
+    folderIconColor: "#22c55e",          // NEW
+    folderNoteIconColor: "#eab308"       // NEW
 };

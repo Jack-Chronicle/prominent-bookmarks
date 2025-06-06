@@ -66,14 +66,26 @@ export default class ProminentBookmarks extends Plugin {
         setTimeout(() => this.updateAll(), 50);
       }
     });
+    this.updateColoringClass();
   }
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    this.updateColoringClass();
   }
 
   async saveSettings() {
     await this.saveData(this.settings);
+    this.updateColoringClass();
+  }
+
+  updateColoringClass() {
+    const body = document.body;
+    if (this.settings.iconColoringEnabled ?? true) {
+      body.classList.add("prominent-bookmarks-coloring-enabled");
+    } else {
+      body.classList.remove("prominent-bookmarks-coloring-enabled");
+    }
   }
 
   onunload() {
@@ -173,6 +185,20 @@ export default class ProminentBookmarks extends Plugin {
           const iconEl = document.createElement("div");
           iconEl.classList.add("prominent-decorated-file");
           iconEl.innerHTML = getLucideIcon(iconName);
+
+          // Set color if enabled
+          if (this.settings.iconColoringEnabled ?? true) {
+            let color = "";
+            if (prominentType === 1) color = this.settings.fileIconColor || "#4f46e5";
+            else if (prominentType === 2) color = this.settings.folderIconColor || "#22c55e";
+            else if (prominentType === 3) color = this.settings.folderNoteIconColor || "#eab308";
+            iconEl.style.color = color;
+          } else {
+            iconEl.style.color = ""; // Remove inline color
+            // Remove any color class if present (let it inherit text color)
+            iconEl.classList.remove("prominent-file-color", "prominent-folder-color", "prominent-foldernote-color");
+          }
+
           el.appendChild(iconEl);
         }
       }
@@ -208,6 +234,15 @@ export default class ProminentBookmarks extends Plugin {
           const iconEl = document.createElement("div");
           iconEl.classList.add("prominent-decorated-file");
           iconEl.innerHTML = getLucideIcon(iconName);
+
+          // Set color if enabled
+          if (this.settings.iconColoringEnabled ?? true) {
+            iconEl.style.color = this.settings.folderNoteIconColor || "#eab308";
+          } else {
+            iconEl.style.color = "";
+            iconEl.classList.remove("prominent-file-color", "prominent-folder-color", "prominent-foldernote-color");
+          }
+
           el.appendChild(iconEl);
         }
       }

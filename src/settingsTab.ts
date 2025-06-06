@@ -167,5 +167,62 @@ export class ProminentBookmarksSettingTab extends PluginSettingTab {
                         })
                 );
         }
+
+        // Icon coloring toggle
+        new Setting(containerEl)
+            .setName("Enable Icon Coloring")
+            .setDesc("Toggle to enable or disable custom coloring for prominent icons.")
+            .addToggle(toggle =>
+                toggle
+                    .setValue(this.plugin.settings.iconColoringEnabled ?? true)
+                    .onChange(async (value) => {
+                        this.plugin.settings.iconColoringEnabled = value;
+                        await this.plugin.saveSettings();
+                        this.display();
+                        this.plugin.updateAll();
+                    })
+            );
+
+        if (this.plugin.settings.iconColoringEnabled ?? true) {
+            new Setting(containerEl)
+                .setName("File Icon Color")
+                .setDesc("Color for file icons (hex or CSS color)")
+                .addText(text =>
+                    text
+                        .setPlaceholder("#4f46e5")
+                        .setValue(this.plugin.settings.fileIconColor || "#4f46e5")
+                        .onChange(async (value) => {
+                            this.plugin.settings.fileIconColor = value || "#4f46e5";
+                            await this.plugin.saveSettings();
+                            this.plugin.updateAll();
+                        })
+                );
+            new Setting(containerEl)
+                .setName("Folder Icon Color")
+                .setDesc("Color for folder icons (hex or CSS color)")
+                .addText(text =>
+                    text
+                        .setPlaceholder("#22c55e")
+                        .setValue(this.plugin.settings.folderIconColor || "#22c55e")
+                        .onChange(async (value) => {
+                            this.plugin.settings.folderIconColor = value || "#22c55e";
+                            await this.plugin.saveSettings();
+                            this.plugin.updateAll();
+                        })
+                );
+            new Setting(containerEl)
+                .setName("Folder Note Icon Color")
+                .setDesc("Color for folder note icons (hex or CSS color)")
+                .addText(text =>
+                    text
+                        .setPlaceholder("#eab308")
+                        .setValue(this.plugin.settings.folderNoteIconColor || "#eab308")
+                        .onChange(async (value) => {
+                            this.plugin.settings.folderNoteIconColor = value || "#eab308";
+                            await this.plugin.saveSettings();
+                            this.plugin.updateAll();
+                        })
+                );
+        }
     }
 }
