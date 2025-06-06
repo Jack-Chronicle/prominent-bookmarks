@@ -1,10 +1,10 @@
 {
-    "id": "prominent-bookmarks",
-    "name": "Prominent Bookmarks",
-    "version": "2.5.0",
-    "minAppVersion": "0.15.8",
-    "description": "Prominently display bookmarked notes in the file explorer",
-    "author": "Jack Chronicle",
-    "main": "main.js",
-    "isDesktopOnly": false
+  "id": "prominent-bookmarkes",
+  "name": "Prominent Bookmarks",
+  "version": "2.6.0",
+  "minAppVersion": "0.15.8",
+  "description": "Prominently display bookmarked notes in the file explorer",
+  "author": "Jack Chronicle",
+  "main": "main.js",
+  "isDesktopOnly": false
 }
