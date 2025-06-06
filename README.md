@@ -26,6 +26,7 @@ Make your most important notes and folders stand out in the Obsidian File Explor
    - `main.js`
    - `manifest.json`
    - `package.json`
+   - `styles.css`
 3. Place all three files into a new folder named `prominent-bookmarks` inside your Obsidian vault's `.obsidian/plugins/` directory.
    - Example path: `YourVault/.obsidian/plugins/prominent-bookmarks/`
 4. Restart Obsidian or reload plugins.
