@@ -1,2 +1,30 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Ensure all source code files use LF
+*.js   text eol=lf
+*.ts   text eol=lf
+*.css  text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+
+# Treat these as binary (no diff/merge)
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.svg  text
+
+# Mark lock files as text (for npm/yarn/pnpm)
+package-lock.json text eol=lf
+yarn.lock        text eol=lf
+pnpm-lock.yaml   text eol=lf
+
+# Handle shell scripts (if any)
+*.sh   text eol=lf
+
+# Handle Windows batch files (if any)
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
