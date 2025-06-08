@@ -100,6 +100,8 @@ jobs:
         shell: bash
 
       - name: Commit and push version bump
+        # Note: The step to remove package.json from the workspace has been intentionally omitted.
+        # This decision ensures that package.json remains available for subsequent steps or debugging purposes.
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -110,14 +112,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create plugin folder for ZIP
-        run: |
-          mkdir -p prominent-bookmarks
-          cp dist/main.js prominent-bookmarks/
-          if [ -f dist/styles.css ]; then cp dist/styles.css prominent-bookmarks/; fi
-          cp manifest.json prominent-bookmarks/
-        shell: bash
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -127,6 +121,5 @@ jobs:
             dist/main.js
             manifest.json
             dist/styles.css
-            prominent-bookmarks/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
