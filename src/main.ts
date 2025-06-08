@@ -60,13 +60,25 @@ export default class ProminentBookmarks extends Plugin {
     await this.loadSettings();
     this.addSettingTab(new ProminentBookmarksSettingTab(this.app, this));
     this.watchBookmarks();
-    this.app.workspace.onLayoutReady(() => this.updateAll());
-    this.registerDomEvent(document, "click", (evt) => {
-      if ((evt.target as HTMLElement).closest(".tree-item")) {
-        setTimeout(() => this.updateAll(), 50);
-      }
+    this.app.workspace.onLayoutReady(() => {
+      this.updateColoringClass();
+      this.updateAll(); // Ensure icons are updated after layout is ready
+      // One-time fallback: check for file explorer for up to 2 seconds after startup
+      let explorerCheckTries = 0;
+      const explorerCheckInterval = window.setInterval(() => {
+        const explorers = this.fileExplorers;
+        if (explorers.length > 0) {
+          this.updateAll();
+          window.clearInterval(explorerCheckInterval);
+        }
+        explorerCheckTries++;
+        if (explorerCheckTries > 20) { // ~2 seconds if interval is 100ms
+          window.clearInterval(explorerCheckInterval);
+        }
+      }, 100);
     });
-    this.updateColoringClass();
+    // Also call updateAll() in case workspace is already ready
+    this.updateAll();
   }
 
   async loadSettings() {
@@ -89,7 +101,7 @@ export default class ProminentBookmarks extends Plugin {
   }
 
   onunload() {
-    this.removeAllIcons();
+    this.removeAllIcons(); // Ensure icons are removed on unload
     if (this._bookmarkObserver) {
       if (typeof this._bookmarkObserver === 'function') {
         this._bookmarkObserver(); // For bookmarksPlugin.instance.onChange
@@ -127,7 +139,8 @@ export default class ProminentBookmarks extends Plugin {
     if (bookmarksPlugin?.instance?.onChange) {
       this._bookmarkObserver = bookmarksPlugin.instance.onChange(() => this.updateAll());
     } else {
-      this._bookmarkObserver = window.setInterval(() => this.updateAll(), 2000);
+      // If no onChange, fallback to a one-time update (no interval)
+      this.updateAll();
     }
   }
 
@@ -199,7 +212,29 @@ export default class ProminentBookmarks extends Plugin {
             iconEl.classList.remove("prominent-file-color", "prominent-folder-color", "prominent-foldernote-color");
           }
 
-          el.appendChild(iconEl);
+          // Find the nav-title-content element inside the nav-title
+          let titleContent: HTMLElement | null = null;
+          if (file.type === "file") {
+            titleContent = el.querySelector('.tree-item-inner .nav-file-title-content');
+          } else if (file.type === "folder") {
+            titleContent = el.querySelector('.tree-item-inner .nav-folder-title-content');
+          }
+          // Remove any existing prominent icon that is a sibling of the content element
+          if (titleContent) {
+            let sibling = titleContent.nextElementSibling;
+            while (sibling) {
+              const next = sibling.nextElementSibling;
+              if (sibling.classList.contains("prominent-decorated-file")) {
+                sibling.remove();
+              }
+              sibling = next;
+            }
+            titleContent.insertAdjacentElement("afterend", iconEl);
+          } else {
+            // fallback: remove any prominent icon children, then append
+            el.querySelectorAll(".prominent-decorated-file").forEach((e: Element) => e.remove());
+            el.appendChild(iconEl);
+          }
         }
       }
     }
@@ -243,7 +278,22 @@ export default class ProminentBookmarks extends Plugin {
             iconEl.classList.remove("prominent-file-color", "prominent-folder-color", "prominent-foldernote-color");
           }
 
-          el.appendChild(iconEl);
+          // For folder note parent folders
+          let titleContent2: HTMLElement | null = el.querySelector('.tree-item-inner .nav-folder-title-content');
+          if (titleContent2) {
+            let sibling = titleContent2.nextElementSibling;
+            while (sibling) {
+              const next = sibling.nextElementSibling;
+              if (sibling.classList.contains("prominent-decorated-file")) {
+                sibling.remove();
+              }
+              sibling = next;
+            }
+            titleContent2.insertAdjacentElement("afterend", iconEl);
+          } else {
+            el.querySelectorAll(".prominent-decorated-file").forEach((e: Element) => e.remove());
+            el.appendChild(iconEl);
+          }
         }
       }
     }

@@ -49,10 +49,10 @@ export class ProminentBookmarksSettingTab extends PluginSettingTab {
                 .setDesc("Lucide icon name for bookmarked folders")
                 .addText(text =>
                     text
-                        .setPlaceholder("bookmark")
+                        .setPlaceholder("bookmark-plus")
                         .setValue(this.plugin.settings.folderIcon)
                         .onChange(async (value) => {
-                            this.plugin.settings.folderIcon = value || "bookmark";
+                            this.plugin.settings.folderIcon = value || "bookmark-plus";
                             await this.plugin.saveSettings();
                             this.plugin.updateAll();
                         })
@@ -128,10 +128,10 @@ export class ProminentBookmarksSettingTab extends PluginSettingTab {
                 .setDesc("Lucide icon name for expanded folders")
                 .addText(text =>
                     text
-                        .setPlaceholder("chevron-down")
-                        .setValue(this.plugin.settings.folderExpandedIcon || "chevron-down")
+                        .setPlaceholder("bookmark-minus")
+                        .setValue(this.plugin.settings.folderExpandedIcon || "bookmark-minus")
                         .onChange(async (value) => {
-                            this.plugin.settings.folderExpandedIcon = value || "chevron-down";
+                            this.plugin.settings.folderExpandedIcon = value || "bookmark-minus";
                             await this.plugin.saveSettings();
                             this.plugin.updateAll();
                         })
@@ -158,10 +158,10 @@ export class ProminentBookmarksSettingTab extends PluginSettingTab {
                 .setDesc("Lucide icon name for expanded folder notes")
                 .addText(text =>
                     text
-                        .setPlaceholder("chevron-down")
-                        .setValue(this.plugin.settings.folderNoteExpandedIcon || "chevron-down")
+                        .setPlaceholder("book-open")
+                        .setValue(this.plugin.settings.folderNoteExpandedIcon || "book-open")
                         .onChange(async (value) => {
-                            this.plugin.settings.folderNoteExpandedIcon = value || "chevron-down";
+                            this.plugin.settings.folderNoteExpandedIcon = value || "book-open";
                             await this.plugin.saveSettings();
                             this.plugin.updateAll();
                         })

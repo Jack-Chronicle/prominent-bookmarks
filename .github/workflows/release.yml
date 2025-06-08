@@ -9,7 +9,6 @@ permissions:
   contents: write
   packages: write
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,9 +34,7 @@ jobs:
           path: |
             dist/main.js
             dist/styles.css
-            dist/main.js.map
             manifest.json
-            package.json
 
   release:
     needs: build
@@ -112,6 +109,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create plugin folder for ZIP
+        run: |
+          mkdir -p prominent-bookmarks
+          cp dist/main.js prominent-bookmarks/
+          cp dist/styles.css prominent-bookmarks/ || true
+          cp manifest.json prominent-bookmarks/
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -120,8 +124,7 @@ jobs:
           files: |
             dist/main.js
             dist/styles.css
-            dist/main.js.map
             manifest.json
-            package.json
+            prominent-bookmarks/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

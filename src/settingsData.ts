@@ -17,13 +17,13 @@ export interface ProminentBookmarksSettings {
 export const DEFAULT_SETTINGS: ProminentBookmarksSettings = {
     separateIcons: false,
     fileIcon: "bookmark",
-    folderIcon: "bookmark",
+    folderIcon: "bookmark-plus",
     folderNoteIconMode: "file",
     folderNoteIcon: "book",
     folderExpandedIconEnabled: false,
-    folderExpandedIcon: "chevron-down",
+    folderExpandedIcon: "bookmark-minus",
     folderNoteExpandedIconEnabled: false,
-    folderNoteExpandedIcon: "chevron-down",
+    folderNoteExpandedIcon: "book-open",
     iconColoringEnabled: true,           // NEW
     fileIconColor: "#4f46e5",            // NEW
     folderIconColor: "#22c55e",          // NEW
