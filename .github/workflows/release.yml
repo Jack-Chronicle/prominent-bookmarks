@@ -35,6 +35,7 @@ jobs:
             dist/main.js
             dist/styles.css
             manifest.json
+            package.json
 
   release:
     needs: build
@@ -49,6 +50,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: plugin-build
+
+      - name: Remove package.json from workspace (not for release)
+        run: rm -f package.json
+        shell: bash
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -113,8 +118,9 @@ jobs:
         run: |
           mkdir -p prominent-bookmarks
           cp dist/main.js prominent-bookmarks/
-          cp dist/styles.css prominent-bookmarks/ || true
+          if [ -f dist/styles.css ]; then cp dist/styles.css prominent-bookmarks/; fi
           cp manifest.json prominent-bookmarks/
+        shell: bash
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -123,8 +129,8 @@ jobs:
           name: ${{ steps.bump_version.outputs.new_version || steps.use_new_version.outputs.new_version }}
           files: |
             dist/main.js
-            dist/styles.css
             manifest.json
+            dist/styles.css
             prominent-bookmarks/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
