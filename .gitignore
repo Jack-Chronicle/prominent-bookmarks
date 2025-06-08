@@ -5,7 +5,6 @@
 *dev.js
 
 # Node modules
-dist/
 node_modules/
 
 # IDE/editor files
