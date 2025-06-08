@@ -22,16 +22,11 @@ Make your most important notes and folders stand out in the Obsidian File Explor
 ## Installation
 
 1. Go to the [Releases](https://github.com/Jack-Chronicle/prominent-bookmarks/releases) page of this plugin's GitHub repository.
-2. Download **either**:
-   - The **`prominent-bookmarks` folder** (recommended for most users):
-     - Download and extract the `prominent-bookmarks` folder from the release assets.
-     - Place the entire folder into your Obsidian vault's `.obsidian/plugins/` directory.
-     - Example path: `YourVault/.obsidian/plugins/prominent-bookmarks/`
-   - **Or, download the individual files**:
-     - `main.js`
-     - `manifest.json`
-     - `styles.css`
-     - Place these files into a new folder named `prominent-bookmarks` inside your vault's `.obsidian/plugins/` directory.
+2. Download **the individual files** from the release assets:
+   - `main.js`
+   - `manifest.json`
+   - `styles.css` (optional)
+   - Place these files into a new folder named `prominent-bookmarks` inside your vault's `.obsidian/plugins/` directory.
 3. Restart Obsidian or reload plugins.
 4. Enable "Prominent Bookmarks" in the Community Plugins settings.
 
