@@ -51,10 +51,6 @@ jobs:
         with:
           name: plugin-build
 
-      - name: Remove package.json from workspace (not for release)
-        run: rm -f package.json
-        shell: bash
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -113,6 +109,10 @@ jobs:
           git push origin master --follow-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Remove package.json from workspace (not for release)
+        run: rm -f package.json
+        shell: bash
 
       - name: Create plugin folder for ZIP
         run: |
