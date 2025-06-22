@@ -76,9 +76,13 @@ export default class ProminentBookmarks extends Plugin {
           window.clearInterval(explorerCheckInterval);
         }
       }, 100);
+      // Add folder toggle event listeners
+      this.addFolderToggleListeners();
     });
     // Also call updateAll() in case workspace is already ready
     this.updateAll();
+    // Add folder toggle event listeners (for already loaded explorers)
+    this.addFolderToggleListeners();
   }
 
   async loadSettings() {
@@ -139,8 +143,35 @@ export default class ProminentBookmarks extends Plugin {
     if (bookmarksPlugin?.instance?.onChange) {
       this._bookmarkObserver = bookmarksPlugin.instance.onChange(() => this.updateAll());
     } else {
-      // If no onChange, fallback to a one-time update (no interval)
-      this.updateAll();
+      // Fallback: poll for changes every 500ms
+      let lastItems = JSON.stringify(this.bookmarkedGroups);
+      this._bookmarkObserver = window.setInterval(() => {
+        const currentItems = JSON.stringify(this.bookmarkedGroups);
+        if (currentItems !== lastItems) {
+          lastItems = currentItems;
+          this.updateAll();
+        }
+      }, 500);
+    }
+  }
+
+  addFolderToggleListeners() {
+    for (const leaf of this.fileExplorers) {
+      const containerEl = (leaf as any).containerEl as HTMLElement;
+      // Remove previous listener if any
+      if (containerEl._prominentFolderToggleListener) {
+        containerEl.removeEventListener('click', containerEl._prominentFolderToggleListener, true);
+      }
+      // Define and attach new listener
+      const listener = (evt: MouseEvent) => {
+        const target = evt.target as HTMLElement;
+        if (target && (target.classList.contains('nav-folder-collapse') || target.closest('.nav-folder-title'))) {
+          // Wait for Obsidian to update DOM, then update icons
+          setTimeout(() => this.updateAll(), 0);
+        }
+      };
+      containerEl.addEventListener('click', listener, true);
+      containerEl._prominentFolderToggleListener = listener;
     }
   }
 
@@ -302,8 +333,16 @@ export default class ProminentBookmarks extends Plugin {
   removeAllIcons() {
     for (const leaf of this.fileExplorers) {
       const containerEl = (leaf as any).containerEl as HTMLElement;
+      // Remove all prominent icons
       const icons = containerEl.querySelectorAll(".prominent-decorated-file");
       icons.forEach((i: Element) => i.remove());
+      // Remove all 'prominent' attributes from tree items and nav titles
+      containerEl.querySelectorAll('.tree-item[prominent]').forEach((el: Element) => {
+        el.removeAttribute('prominent');
+      });
+      containerEl.querySelectorAll('.nav-file-title[prominent], .nav-folder-title[prominent]').forEach((el: Element) => {
+        el.removeAttribute('prominent');
+      });
     }
   }
 }

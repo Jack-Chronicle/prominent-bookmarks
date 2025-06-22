@@ -46,12 +46,11 @@ function copyDevBuild() {
     if (fs.existsSync(configPath)) {
         const { copyTo } = JSON.parse(fs.readFileSync(configPath, "utf8"));
         if (copyTo && fs.existsSync(copyTo)) {
-            // Only copy main.js, styles.css, manifest.json, package.json (not .map)
+            // Only copy main.js, styles.css, manifest.json (not .map)
             const files = [
                 "dist/main.js",
                 "dist/styles.css",
-                "manifest.json",
-                "package.json"
+                "manifest.json"
             ];
             for (const file of files) {
                 const dest = path.join(copyTo, path.basename(file));
